@@ -10,3 +10,10 @@ r"""
 |_|\___/|___/
 
 """
+
+class LOSController:
+    """
+    to be continued
+    """
+    def __init__(self):
+        pass
