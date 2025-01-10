@@ -37,10 +37,12 @@ controller = PID(
 
 for _ in range(iters):
     u, v, r = uvr
-    x, y, psi = Eta
+    # in mmg coordinate sys, z points to sea depth
+    # the coordinates looks like a reversed x,y coord if looked from above
+    y, x, psi = Eta
 
-    xs.append(y)
-    ys.append(x)
+    xs.append(x)
+    ys.append(y)
     psis.append(psi/np.pi*180)
 
     desire_delta = controller.control(desire_value=desire_psi, current_value=psi)
@@ -51,7 +53,7 @@ for _ in range(iters):
 
     uvr, Eta = pstep(
         X=uvr,
-        pos=np.array([x, y]),
+        pos=np.array([y, x]),
         psi=psi,
         vessel=vessel,
         dT=1,

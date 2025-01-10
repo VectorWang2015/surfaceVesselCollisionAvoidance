@@ -1,20 +1,20 @@
 import numpy as np
 import mmgdynamics.calibrated_vessels as cvs
 
-from visualize import setup_plot, plot_trajectory
-from shipControl.pid import PID
+from visualize import setup_plot, plot_trajectory, plot_heading
+from shipControl.los import LOSController
 from mmgdynamics.maneuvers import *
 from mmgdynamics.structs import Vessel
 from mmgdynamics import pstep
 
 desired_path = [
-    (0, 0),
-    (5000, 5000),
+    (500, 5000),
+    (5000, 7000),
 ]
 # Use a pre-calibrated vessel
 vessel = Vessel(**cvs.kvlcc2_full)
 
-iters = 600
+iters = 2000
 xs = []
 ys = []
 psis = []
@@ -33,29 +33,36 @@ nps = 3.0
 delta = 0 / 180 * np.pi
 delta_limit = 45 / 180 * np.pi
 
-controller = PID(
+controller = LOSController(
+    waypoints=desired_path,
     kp=1,
     ki=1,
     kd=40,
+    reached_threshold=30,
+    rudder_limit=delta_limit,
 )
 
-for _ in range(iters):
+for i in range(iters):
     u, v, r = uvr
-    x, y, psi = Eta
+    y, x, psi = Eta
 
-    xs.append(y)
-    ys.append(x)
+    xs.append(x)
+    ys.append(y)
     psis.append(psi/np.pi*180)
 
-    desire_delta = controller.control(desire_value=desire_psi, current_value=psi)
+    is_ended, delta = controller.step(
+        cur_pos=(x, y),
+        cur_psi=psi,
+    )
 
-    # clamp input rudder
-    delta = delta_limit if desire_delta > delta_limit else desire_delta
-    delta = -delta_limit if desire_delta < -delta_limit else delta
+
+    if is_ended:
+        print("Target reached at iter {}!".format(i))
+        break
 
     uvr, Eta = pstep(
         X=uvr,
-        pos=np.array([x, y]),
+        pos=np.array([y, x]),
         psi=psi,
         vessel=vessel,
         dT=1,
@@ -69,6 +76,8 @@ plot_trajectory(
     ax=axs[0],
     vessel_trajectory=(xs, ys),
 )
-axs[1].plot(np.array(range(len(psis))), psis)
-axs[1].grid()
+plot_heading(
+    ax=axs[1],
+    headings=psis,
+)
 plt.show()
