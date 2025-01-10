@@ -1,7 +1,7 @@
 import numpy as np
 import mmgdynamics.calibrated_vessels as cvs
 
-from visualize import setup_plot, plot_trajectory
+from visualize import setup_plot, plot_trajectory, plot_heading
 from shipControl.pid import PID
 from mmgdynamics.maneuvers import *
 from mmgdynamics.structs import Vessel
@@ -65,10 +65,9 @@ plot_trajectory(
     ax=axs[0],
     vessel_trajectory=(xs, ys),
 )
-axs[1].plot(np.array(range(len(psis))), psis, label="Heading")
-axs[1].grid()
-axs[1].set_xlabel("s")
-axs[1].set_ylabel("degree")
-axs[1].legend(loc="lower right")
+plot_heading(
+    ax=axs[1],
+    headings=psis,
+)
 
 plt.show()

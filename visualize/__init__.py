@@ -10,9 +10,10 @@ __   _(_)___ _   _  __ _| (_)_______
   \_/ |_|___/\__,_|\__,_|_|_/___\___|
 
 """
+import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable
 
 def setup_plot():
     matplotlib.rcParams['font.family'] = ['Liberation Sans', 'sans-serif']
@@ -21,8 +22,8 @@ def setup_plot():
 
 
 def plot_trajectory(
-    ax,
-    vessel_trajectory: Optional[Tuple],
+        ax,
+        vessel_trajectory: Optional[Tuple],
 ):
     xs, ys = vessel_trajectory
     ax.set_aspect("equal")
@@ -31,4 +32,18 @@ def plot_trajectory(
     ax.plot(xs, ys, 'orange', label="Actual trajectory")
     ax.set_xlabel("m")
     ax.set_ylabel("m")
+    ax.legend(loc="lower right")
+
+
+def plot_heading(
+        ax,
+        headings: Iterable[float],
+):
+    """
+    assume 1 sample/s
+    """
+    ax.plot(np.array(range(len(headings))), headings, label="OS")
+    ax.grid()
+    ax.set_xlabel("Sample time [s]")
+    ax.set_ylabel("Heading [degree]")
     ax.legend(loc="lower right")
