@@ -8,6 +8,7 @@ from mmgdynamics.structs import Vessel
 from mmgdynamics import pstep
 
 desired_path = [
+    (0, 0),
     (500, 5000),
     (5000, 7000),
 ]
@@ -75,6 +76,7 @@ fig, axs = plt.subplots(2)
 plot_trajectory(
     ax=axs[0],
     vessel_trajectory=(xs, ys),
+    global_path=desired_path,
 )
 plot_heading(
     ax=axs[1],

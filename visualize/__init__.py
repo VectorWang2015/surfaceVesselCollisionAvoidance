@@ -23,13 +23,18 @@ def setup_plot():
 
 def plot_trajectory(
         ax,
-        vessel_trajectory: Optional[Tuple],
+        vessel_trajectory: Iterable[Tuple],
+        global_path: Optional[Iterable[Tuple[float, float]]],
 ):
     xs, ys = vessel_trajectory
     ax.set_aspect("equal")
-    ax.scatter(xs[:2], ys[:2], color="red", label="Start point")
+    ax.scatter(xs[:1], ys[:1], color="red", label="Start point")
     ax.scatter(xs[-1:], ys[-1:], color="green", label="End point")
     ax.plot(xs, ys, 'orange', label="Actual trajectory")
+    if global_path is not None:
+        xs = [x for x, _ in global_path]
+        ys = [y for _, y in global_path]
+        ax.plot(xs, ys, 'x--', color='grey', label="Reference path")
     ax.set_xlabel("m")
     ax.set_ylabel("m")
     ax.legend(loc="lower right")

@@ -32,7 +32,7 @@ class LOSController:
         """
         rudder_limit: max angel rudder can reach [rad]
         """
-        self.reference_path = waypoints
+        self.reference_path = waypoints[:]
         self.controller = PID(
             kp,
             ki,
