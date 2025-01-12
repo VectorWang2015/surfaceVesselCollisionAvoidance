@@ -23,8 +23,9 @@ def setup_plot():
 
 def plot_trajectory(
         ax,
-        vessel_trajectory: Iterable[Tuple],
-        global_path: Optional[Iterable[Tuple[float, float]]],
+        vessel_trajectory: Tuple[Iterable],
+        global_path: Optional[Iterable[Tuple[float, float]]]=None,
+        participant_trajectory: Optional[Tuple[Iterable]]=None,
 ):
     xs, ys = vessel_trajectory
     ax.set_aspect("equal")
@@ -35,6 +36,11 @@ def plot_trajectory(
         xs = [x for x, _ in global_path]
         ys = [y for _, y in global_path]
         ax.plot(xs, ys, 'x--', color='grey', label="Reference path")
+    if participant_trajectory is not None:
+        xs, ys = participant_trajectory
+        ax.plot(xs, ys, '--', color='blue', label="Traffic participant trajectory")
+        ax.scatter(xs[:1], ys[:1], color="red")
+        ax.scatter(xs[-1:], ys[-1:], color="green")
     ax.set_xlabel("m")
     ax.set_ylabel("m")
     ax.legend(loc="lower right")
