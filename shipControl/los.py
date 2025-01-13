@@ -94,3 +94,7 @@ class LOSController:
         elif control_value < -self.rudder_limit:
             control_value = -self.rudder_limit
         return False, control_value
+
+    @property
+    def current_target(self):
+        return self.reference_path[0]

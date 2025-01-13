@@ -58,3 +58,24 @@ def plot_heading(
     ax.set_xlabel("Sample time [s]")
     ax.set_ylabel("Heading [degree]")
     ax.legend(loc="lower right")
+
+
+def plot_vo_cone(
+        ax,
+        vo_cone: Tuple[Tuple, Tuple, Tuple],
+        os_loc: Tuple[float, float],
+        os_velo: Tuple[float, float],
+):
+    cone_cross_pt, vo_pt1, vo_pt2 = vo_cone
+    cross_x, cross_y = cone_cross_pt
+    vo_x1, vo_y1 = vo_pt1
+    vo_x2, vo_y2 = vo_pt2
+    os_x, os_y = os_loc
+    velo_x, velo_y = os_velo
+
+    ax.set_aspect("equal")
+    ax.plot([cross_x, vo_x1], [cross_y, vo_y1], "red")
+    ax.plot([cross_x, vo_x2], [cross_y, vo_y2], "blue")
+    ax.plot([os_x, os_x+velo_x], [os_y, os_y+velo_y], "black")
+    ax.scatter([os_x], [os_y], color="black")
+

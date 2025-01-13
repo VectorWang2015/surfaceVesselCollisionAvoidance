@@ -15,8 +15,10 @@ desired_path = [
 ]
 # Use a pre-calibrated vessel
 vessel = Vessel(**cvs.kvlcc2_full)
+os_length = 300
+participant_length = 300
 
-iters = 4000
+iters = 3000
 xs = []
 ys = []
 psis = []
@@ -35,20 +37,6 @@ nps = 3.0
 delta = 0 / 180 * np.pi
 delta_limit = 45 / 180 * np.pi
 
-# params for traffic participant
-p_xs = []
-p_ys = []
-p_psis = []
-
-# 10 knots
-p_uvr = np.array([5*0.514, 0, 0])
-# y, x, psi; m, m, rad
-p_Eta = np.array([0, 20000, -33/180*np.pi])
-# propeller revs; s⁻¹
-p_nps = 1.9
-# init rudder angle; rad
-p_delta = 0
-
 
 controller = LOSController(
     waypoints=desired_path,
@@ -59,7 +47,10 @@ controller = LOSController(
     rudder_limit=delta_limit,
 )
 
+
 for i in range(iters):
+    in_collison_avoidance_time = 0
+    vo_interval = 60
     """os"""
     u, v, r = uvr
     y, x, psi = Eta
@@ -68,6 +59,7 @@ for i in range(iters):
     ys.append(y)
     psis.append(psi/np.pi*180)
 
+    # los control
     is_ended, delta = controller.step(
         cur_pos=(x, y),
         cur_psi=psi,
@@ -87,31 +79,12 @@ for i in range(iters):
         delta=delta,
     )
 
-    """participant"""
-    p_u, p_v, p_r = p_uvr
-    p_y, p_x, p_psi = p_Eta
-
-    p_xs.append(p_x)
-    p_ys.append(p_y)
-    p_psis.append(p_psi/np.pi*180)
-
-    p_uvr, p_Eta = pstep(
-        X=p_uvr,
-        pos=np.array([p_y, p_x]),
-        psi=p_psi,
-        vessel=vessel,
-        dT=1,
-        nps=p_nps,
-        delta=p_delta,
-    )
-
 setup_plot()
 fig, axs = plt.subplots(2)
 plot_trajectory(
     ax=axs[0],
     vessel_trajectory=(xs, ys),
     global_path=desired_path,
-    participant_trajectory=(p_xs, p_ys),
 )
 plot_heading(
     ax=axs[1],
