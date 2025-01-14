@@ -128,8 +128,14 @@ class HeadingControlVO:
 
             if not self.is_inside_vo_cone(vo_cone, os_loc, velo_vec_1):
                 #print("searched", search_dir_1)
+                #fig, ax = plt.subplots()
+                #plot_vo_cone(ax, vo_cone, os_loc, velo_vec_1)
+                #plt.show()
                 return np.arctan2(velo_vec_1[0], velo_vec_1[1])
-            #if not self.is_inside_vo_cone(vo_cone, os_loc, velo_vec_2):
+            if not self.is_inside_vo_cone(vo_cone, os_loc, velo_vec_2):
+                #fig, ax = plt.subplots()
+                #plot_vo_cone(ax, vo_cone, os_loc, velo_vec_2)
+                #plt.show()
                 return np.arctan2(velo_vec_2[0], velo_vec_2[1])
         
         # should not reach here unless already collided

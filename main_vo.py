@@ -2,6 +2,7 @@ import numpy as np
 import mmgdynamics.calibrated_vessels as cvs
 
 from visualize import setup_plot, plot_trajectory, plot_heading
+from visualize.animation import animate_trajectory
 from shipControl.los import LOSController
 from shipControl.pid import PID
 from shipControl.vo import HeadingControlVO
@@ -79,20 +80,22 @@ def in_collision_avoidance_range(
         obs_loc,
 ):
     """
-    have the risk of collision if distance within 5 * ship_length
+    have the risk of collision if distance within 6 * ship_length
     """
     os_loc = np.array(os_loc)
     obs_loc = np.array(obs_loc)
-    return np.linalg.norm(os_loc-obs_loc) < 5 * os_length
+    return np.linalg.norm(os_loc-obs_loc) < 6 * os_length
 
 
 def velo_2_veloxy(velo, heading):
     dir = np.pi / 2 - heading
     return (np.cos(dir) * velo, np.sin(dir) * velo)
 
+vo_interval = 10
+in_collison_avoidance_time = 0
+min_dist = 1e6
+
 for i in range(iters):
-    in_collison_avoidance_time = 0
-    vo_interval = 60
     """os"""
     u, v, r = uvr
     y, x, psi = Eta
@@ -109,6 +112,10 @@ for i in range(iters):
     p_ys.append(p_y)
     p_psis.append(p_psi/np.pi*180)
 
+    current_dist = np.linalg.norm((x-p_x, y-p_y))
+    if current_dist < min_dist:
+        min_dist = current_dist
+
     if in_collision_avoidance_range((x, y), (p_x, p_y)):
         # trigger vo, calc new vo target each vo_interval seconds
         if in_collison_avoidance_time % vo_interval == 0:
@@ -123,7 +130,12 @@ for i in range(iters):
             )
         in_collision_avoidance_time += 1
         delta = vo_pid_controller.control(vo_heading, psi)
-        is_ended = False
+
+        if current_dist < os_length+participant_length:
+            print("Collided at iter {}!".format(i))
+            print("Min dist: {}".format(min_dist))
+            break
+
         print("VO triggered, new direction: {}".format(vo_heading))
     else:
         in_collision_avoidance_time = 0
@@ -135,6 +147,7 @@ for i in range(iters):
 
         if is_ended:
             print("Target reached at iter {}!".format(i))
+            print("Min dist: {}".format(min_dist))
             break
 
     uvr, Eta = pstep(
@@ -159,6 +172,7 @@ for i in range(iters):
     )
 
 setup_plot()
+"""
 fig, axs = plt.subplots(2)
 plot_trajectory(
     ax=axs[0],
@@ -171,3 +185,13 @@ plot_heading(
     headings=psis,
 )
 plt.show()
+"""
+
+fig, ax = plt.subplots()
+animate_trajectory(
+    fig,
+    ax,
+    vessel_trajectory=(xs, ys),
+    global_path=desired_path,
+    participant_trajectory=(p_xs, p_ys),
+)

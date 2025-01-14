@@ -74,6 +74,8 @@ def plot_vo_cone(
     velo_x, velo_y = os_velo
 
     ax.set_aspect("equal")
+    ax.set_xlim(os_loc[0]-50, os_loc[0]+50)
+    ax.set_ylim(os_loc[1]-50, os_loc[1]+50)
     ax.plot([cross_x, vo_x1], [cross_y, vo_y1], "red")
     ax.plot([cross_x, vo_x2], [cross_y, vo_y2], "blue")
     ax.plot([os_x, os_x+velo_x], [os_y, os_y+velo_y], "black")
