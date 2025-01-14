@@ -95,6 +95,22 @@ class HeadingControlVO:
         #breakpoint()
         return cross_1 >= 0 and cross_2 >= 0
 
+    def is_inside_vo_cone_approximately(
+            self,
+            vo_cone: Tuple[Tuple, Tuple, Tuple],
+            os_loc: Tuple[float, float],
+            velo_to_be_checked: Tuple[float, float],
+            margin: float=0.2,
+    ) -> bool:
+        """
+        turning causes kvlcc2 speed to vary
+        checks velocity within certain margin is inside
+        """
+        small_velo = np.array(velo_to_be_checked) * (1-margin)
+        big_velo = np.array(velo_to_be_checked) * (1.2-margin)
+        return self.is_inside_vo_cone(vo_cone, os_loc, small_velo) or self.is_inside_vo_cone(vo_cone, os_loc, velo_to_be_checked) \
+            or self.is_inside_vo_cone(vo_cone, os_loc, big_velo)
+
         
     def calc_heading_target(
             self,
@@ -121,21 +137,21 @@ class HeadingControlVO:
 
         # search for 12 times, 30 degrees each time
         for i in range(6):
-            search_dir_1 = target_dir + (i*30) / 180 * np.pi
+            search_dir_1 = target_dir - (i*30) / 180 * np.pi
             search_dir_2 = target_dir + (i*30) / 180 * np.pi
             velo_vec_1 = (np.cos(search_dir_1) * velo_abs, np.sin(search_dir_1) * velo_abs)
             velo_vec_2 = (np.cos(search_dir_2) * velo_abs, np.sin(search_dir_2) * velo_abs)
 
-            if not self.is_inside_vo_cone(vo_cone, os_loc, velo_vec_1):
+            if not self.is_inside_vo_cone_approximately(vo_cone, os_loc, velo_vec_1):
                 #print("searched", search_dir_1)
-                #fig, ax = plt.subplots()
-                #plot_vo_cone(ax, vo_cone, os_loc, velo_vec_1)
-                #plt.show()
+                # fig, ax = plt.subplots()
+                # plot_vo_cone(ax, vo_cone, os_loc, velo_vec_1)
+                # plt.show()
                 return np.arctan2(velo_vec_1[0], velo_vec_1[1])
-            if not self.is_inside_vo_cone(vo_cone, os_loc, velo_vec_2):
-                #fig, ax = plt.subplots()
-                #plot_vo_cone(ax, vo_cone, os_loc, velo_vec_2)
-                #plt.show()
+            if not self.is_inside_vo_cone_approximately(vo_cone, os_loc, velo_vec_2):
+                # fig, ax = plt.subplots()
+                # plot_vo_cone(ax, vo_cone, os_loc, velo_vec_2)
+                # plt.show()
                 return np.arctan2(velo_vec_2[0], velo_vec_2[1])
         
         # should not reach here unless already collided

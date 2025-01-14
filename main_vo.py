@@ -12,14 +12,15 @@ from mmgdynamics import pstep
 
 desired_path = [
     (0, 0),
-    (5000, 5000),
+    (4000, 4000),
+    (8000, 4000),
 ]
 # Use a pre-calibrated vessel
 vessel = Vessel(**cvs.kvlcc2_full)
 os_length = 300
 participant_length = 300
 
-iters = 3000
+iters = 5000
 xs = []
 ys = []
 psis = []
@@ -28,8 +29,8 @@ psis = []
 desire_psi = 120 / 180 * np.pi
 
 # u, v, r; m/s, m/s, rad/s
-# 3 knots
-uvr = np.array([3*0.514, 0, 0])
+# 8 knots
+uvr = np.array([8*0.514, 0, 0])
 # x, y, psi; m, m, rad
 Eta = np.array([0, 0, 45/180*np.pi])
 # propeller revs; s⁻¹
@@ -43,10 +44,10 @@ p_xs = []
 p_ys = []
 p_psis = []
 
-# 3 knots
-p_uvr = np.array([3*0.514, 0, 0])
+# 8 knots
+p_uvr = np.array([8*0.514, 0, 0])
 # y, x, psi; m, m, rad
-p_Eta = np.array([0, 5000, -45/180*np.pi])
+p_Eta = np.array([0, 4000, -45/180*np.pi])
 # propeller revs; s⁻¹
 p_nps = 1.0
 # init rudder angle; rad
@@ -80,18 +81,18 @@ def in_collision_avoidance_range(
         obs_loc,
 ):
     """
-    have the risk of collision if distance within 6 * ship_length
+    have the risk of collision if distance within 9 * ship_length
     """
     os_loc = np.array(os_loc)
     obs_loc = np.array(obs_loc)
-    return np.linalg.norm(os_loc-obs_loc) < 6 * os_length
+    return np.linalg.norm(os_loc-obs_loc) < 9 * os_length
 
 
 def velo_2_veloxy(velo, heading):
     dir = np.pi / 2 - heading
     return (np.cos(dir) * velo, np.sin(dir) * velo)
 
-vo_interval = 10
+vo_interval = 60
 in_collison_avoidance_time = 0
 min_dist = 1e6
 
@@ -130,13 +131,18 @@ for i in range(iters):
             )
         in_collision_avoidance_time += 1
         delta = vo_pid_controller.control(vo_heading, psi)
+        if delta > delta_limit:
+            delta = delta_limit
+        elif delta < -delta_limit:
+            delta = -delta_limit
 
         if current_dist < os_length+participant_length:
             print("Collided at iter {}!".format(i))
             print("Min dist: {}".format(min_dist))
             break
 
-        print("VO triggered, new direction: {}".format(vo_heading))
+        print("VO triggered, current heading: {}, desire heading: {}.".format(psi, vo_heading))
+        print("Input rudder: ", delta/np.pi*180)
     else:
         in_collision_avoidance_time = 0
         # los control
@@ -172,7 +178,6 @@ for i in range(iters):
     )
 
 setup_plot()
-"""
 fig, axs = plt.subplots(2)
 plot_trajectory(
     ax=axs[0],
@@ -185,7 +190,6 @@ plot_heading(
     headings=psis,
 )
 plt.show()
-"""
 
 fig, ax = plt.subplots()
 animate_trajectory(
