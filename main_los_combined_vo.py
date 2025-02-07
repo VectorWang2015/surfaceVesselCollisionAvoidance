@@ -5,7 +5,7 @@ from visualize import setup_plot, plot_trajectory, plot_heading
 from visualize.animation import animate_trajectory
 from shipControl.los import LOSController
 from shipControl.pid import PID
-from shipControl.vo import HeadingControlVO
+from shipControl.vo import ColregVO
 from mmgdynamics.maneuvers import *
 from mmgdynamics.structs import Vessel
 from mmgdynamics import pstep
@@ -84,7 +84,7 @@ controller = LOSController(
 # 所以：
 # 设定一个上下浮动比例，控制器选取速度时，检查该比例下大小浮动的速度是否都在可行速度域内
 # 以确保选取的速度方向足够鲁棒
-vo_controller = HeadingControlVO(
+vo_controller = ColregVO(
     os_size=os_length,
     obs_size=participant_length,
 )

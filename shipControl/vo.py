@@ -155,3 +155,56 @@ class HeadingControlVO:
                 return np.arctan2(velo_vec_2[0], velo_vec_2[1])
         
         # should not reach here unless already collided
+
+
+class ColregVO(HeadingControlVO):
+    def calc_vo(
+            self,
+            os_loc: Tuple[float, float],
+            obs_loc: Tuple[float, float],
+            obs_velo: Tuple[float, float],
+    ):
+        return self.calc_colreg_vo(
+            os_loc,
+            obs_loc,
+            obs_velo,
+        )
+
+    def calc_colreg_vo(
+            self,
+            os_loc: Tuple[float, float],
+            obs_loc: Tuple[float, float],
+            obs_velo: Tuple[float, float],
+    ):
+        """
+        velo in (velo_x, velo_y)
+        output: vo_corn with cone_cross_pt, line_pt1, line_pt2
+            vo area includes collision and passing from left (seeing obs on the right)
+        """
+        virtual_size = self.os_size + self.obs_size
+        original_vo_pt1, original_vo_pt2 = self.find_tangent_points(os_loc, obs_loc, virtual_size)
+        pt1_x, pt1_y = original_vo_pt1
+        pt2_x, pt2_y = original_vo_pt2
+        os_x, os_y = os_loc
+
+        vec1_x = pt1_x - os_x
+        vec1_y = pt1_y - os_y
+        angle1 = np.arctan2(vec1_y, vec1_x)
+        vec2_x = pt2_x - os_x
+        vec2_y = pt2_y - os_y
+        angle2 = np.arctan2(vec2_y, vec2_x)
+
+        mid_angle = (angle1+angle2) / 2
+        # crossing-with-obs-on-the-right border
+        new_border_angle = mid_angle + np.pi/2
+        vec2_x = np.cos(new_border_angle)
+        vec2_y = np.sin(new_border_angle)
+        pt2_x = vec2_x + os_x
+        pt2_y = vec2_y + os_y
+
+        velo_x, velo_y = obs_velo
+        cone_cross_pt = (os_loc[0]+velo_x, os_loc[1]+velo_y)
+        vo_pt1 = (pt1_x+velo_x, pt1_y+velo_y)
+        vo_pt2 = (pt2_x+velo_x, pt2_y+velo_y)
+
+        return (cone_cross_pt, vo_pt1, vo_pt2)
