@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, Optional
 from functools import partial
 
 def update(
@@ -35,6 +35,7 @@ def animate_trajectory(
         vessel_trajectory: Tuple[Iterable],
         global_path: Iterable[Tuple[float, float]],
         participant_trajectory: Tuple[Iterable],
+        save_loc: Optional[str]=None,
 ):
     ax.set_aspect("equal")
 
@@ -61,5 +62,8 @@ def animate_trajectory(
         init_func=animate_init_fn, blit=True,
         interval=10,
     )
+
+    if save_loc is not None:
+        ani.save(save_loc, writer="pillow")
 
     plt.show()
